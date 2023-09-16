@@ -29,7 +29,8 @@ export async function POST(req: NextRequest, res: NextResponse) {
       .single();
 
     if (!body.id) {
-      body.sold_by = authUser!.name;
+      if (!body.sold_by) body.sold_by = authUser!.name;
+
       body.created_by = authUser!.name;
 
       const { data, error } = await supabaseClient

@@ -38,12 +38,21 @@ const ReservationsPage = () => {
 
     columnFilters?.map((i) => {
       if (i.id == "clients") {
-        _SQ.FilterByOptions.push({
-          FilterFor: `%${i.value}%`,
-          FilterOperator: eFilterOperator.Contains,
-          MemberName: "clients.name",
-        });
+        if (isNaN(i.value as any)) {
+          _SQ.FilterByOptions.push({
+            FilterFor: `%${i.value}%`,
+            FilterOperator: eFilterOperator.Contains,
+            MemberName: "clients.name",
+          });
+        } else {
+          _SQ.FilterByOptions.push({
+            FilterFor: `%${i.value}%`,
+            FilterOperator: eFilterOperator.Contains,
+            MemberName: "clients.phone_number",
+          });
+        }
       }
+
       if (i.id == "check_in") {
         var date_ranage = i.value as DateRange;
         _SQ.FilterByOptions.push({
@@ -83,6 +92,12 @@ const ReservationsPage = () => {
             FilterOperator: eFilterOperator.LessThanOrEquals,
             MemberName: "created_at",
           });
+      } else if (i.id == "countries") {
+        _SQ.FilterByOptions.push({
+          FilterFor: `{${(i.value as string[]).join(",")}}`,
+          FilterOperator: eFilterOperator.ListEqualToList,
+          MemberName: "countries",
+        });
       } else if (typeof i.value === "object") {
         _SQ.FilterByOptions.push({
           MemberName: i.id,
@@ -127,7 +142,7 @@ const ReservationsPage = () => {
           <div>
             <h2 className="text-2xl font-bold tracking-tight">Welcome back!</h2>
             <p className="text-muted-foreground">
-              Here&apos;s a list of your tasks for this month!
+              Here&apos;s a list of last reservations!
             </p>
           </div>
         </div>

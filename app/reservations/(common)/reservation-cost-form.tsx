@@ -6,12 +6,15 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { useNotification } from "@/components/ui/notification";
 import { SelectInput } from "@/components/ui/select-input";
+import { SelectWithSearch } from "@/components/ui/select-with-search";
 import { Separator } from "@/components/ui/separator";
 import { ReservationBills, ReservationCosts, Reservations } from "@/db_types";
+import { supabaseClient } from "@/lib/supabaseClient";
 import { http } from "@/service/httpService";
 import { useFormik } from "formik";
 import { useRouter } from "next/navigation";
 import { FC } from "react";
+import { useQuery } from "react-query";
 import * as yup from "yup";
 
 const ReservationCostForm: FC<{
@@ -20,6 +23,7 @@ const ReservationCostForm: FC<{
 }> = ({ data, reservation_id }) => {
   const route = useRouter();
   const { error, success } = useNotification();
+
   const handleSubmitData = async (formData: ReservationCosts) => {
     const response = (await http("reservation/cost").post(
       formData
@@ -28,10 +32,33 @@ const ReservationCostForm: FC<{
     if (response.success) {
       success("A new cost has been added!");
       route.refresh();
+      resetForm();
     } else {
       error(`An error occured: ${response.message}`);
     }
   };
+
+  const getClients = async () => {
+    const { data, error } = await supabaseClient
+      .from("clients")
+      .select("id,type,name,currency(id,symbol)")
+      .eq("type", "Agency");
+
+    if (error) throw new Error(error.message);
+
+    return data ?? [];
+  };
+
+  const { data: clients } = useQuery(
+    "Clients_agency",
+    async () => await getClients(),
+    {
+      refetchInterval: false,
+      onError(err) {
+        error(err as string);
+      },
+    }
+  );
 
   const {
     submitForm,
@@ -39,6 +66,7 @@ const ReservationCostForm: FC<{
     setFieldValue,
     handleSubmit,
     handleBlur,
+    resetForm,
     isValid,
     isSubmitting,
     errors,
@@ -62,6 +90,20 @@ const ReservationCostForm: FC<{
           <Separator className="my-4" />
           <div className="w-full grid grid-cols-8 gap-y-4 gap-x-8">
             <div className="flex gap-x-4 w-full items-end col-span-6">
+              <SelectWithSearch
+                field="client_id"
+                onChange={setFieldValue}
+                options={clients?.map((x) => {
+                  return {
+                    label: `${x.name!} | ${x.currency?.symbol}`,
+                    value: String(x.id!),
+                  };
+                })}
+                value={String(values.client_id) ?? undefined}
+                placeholder="Search agency"
+                error={touched.client_id && errors.client_id}
+                label="Agency"
+              />
               <Input
                 div_className="grid gap-y-2 w-full relative"
                 disabled={isSubmitting}
@@ -79,7 +121,13 @@ const ReservationCostForm: FC<{
                 value={values.amount ?? ""}
                 name="amount"
                 id="amount"
-                label="Amount"
+                label={`Amount ${
+                  values.client_id
+                    ? "in " +
+                      clients?.find((x) => x.id == values.client_id)?.currency
+                        ?.symbol
+                    : ""
+                } `}
                 onChange={handleChange}
                 onBlur={handleBlur}
                 error={touched.amount && errors.amount}
@@ -108,7 +156,11 @@ const ReservationCostForm: FC<{
               />
             </div>
             <div className="flex justify-between gap-x-8 col-span-2 items-end">
-              <Button className="w-1/2" type="submit" disabled={isSubmitting}>
+              <Button
+                className="w-1/2 h-10"
+                type="submit"
+                disabled={isSubmitting}
+              >
                 {isSubmitting && (
                   <svg
                     aria-hidden="true"
@@ -130,6 +182,16 @@ const ReservationCostForm: FC<{
                 )}
                 Add New
               </Button>
+              <Input
+                div_className="grid gap-y-2 w-full relative"
+                disabled={true}
+                value={data?.reduce(
+                  (accumulator, currentItem) =>
+                    accumulator + (currentItem?.amount_omr ?? 0),
+                  0
+                )}
+                label="Total Costs OMR"
+              />
             </div>
           </div>
         </div>

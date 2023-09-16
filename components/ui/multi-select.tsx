@@ -64,7 +64,7 @@ const MultiSelect = React.forwardRef<HTMLInputElement, MultiSelectProps>(
               size="sm"
               className={cn(
                 error && "border-2 border-red-500",
-                "text-left w-full  cursor-pointer"
+                "text-left w-full  cursor-pointer h-10"
               )}
             >
               <PlusIcon className="mr-2 h-4 w-4" />
@@ -78,8 +78,8 @@ const MultiSelect = React.forwardRef<HTMLInputElement, MultiSelectProps>(
                   >
                     {value.length}
                   </Badge>
-                  <div className="hidden space-x-1 lg:flex gap-2">
-                    {value.length > 1 ? (
+                  <div className="hidden space-x-1 lg:flex gap-2 truncate">
+                    {value.length > 3 ? (
                       <Badge
                         variant="secondary"
                         className="rounded-sm px-1 font-normal "
@@ -93,7 +93,7 @@ const MultiSelect = React.forwardRef<HTMLInputElement, MultiSelectProps>(
                           <Badge
                             variant="secondary"
                             key={option}
-                            className="rounded-sm px-1 font-normal  text-[10px] "
+                            className="rounded-sm px-1 font-normal  text-[10px] truncate"
                           >
                             {option}
                           </Badge>

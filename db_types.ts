@@ -42,6 +42,8 @@ export type ReservationCosts = {
   amount?: number | null;
   amount_omr?: number | null;
   invoice_number?: number | null;
+  clients?: Clients | null;
+  client_id?: number | null;
   notes?: string | null;
   created_at?: string;
 };
@@ -49,7 +51,6 @@ export type ReservationCosts = {
 export type Currency = {
   id?: number | null;
   symbol?: string | null;
-  conversion_rate?: number | null;
   created_at?: string;
 };
 

@@ -77,9 +77,9 @@ const DatePicker = React.forwardRef<HTMLInputElement, DateProps>(
                 id={id}
                 variant={"outline"}
                 className={cn(
-                  " justify-start text-left font-normal text-xs w-full",
+                  " justify-start text-left font-normal text-xs w-full h-10",
                   !value && "text-muted-foreground",
-                  error && "border-2 border-red-500"
+                  error && "border-2 border-red-500 "
                 )}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />

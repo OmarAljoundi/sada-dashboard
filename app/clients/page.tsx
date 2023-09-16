@@ -13,10 +13,11 @@ import { columns } from "./columns";
 import CreateEditClient from "@/components/dialogs/create-edit-client";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
-import { Order, SearchQuery } from "@/helper-types";
+import { Order, SearchQuery, eFilterOperator } from "@/helper-types";
 import { BaseResponse } from "@/base-response";
 import { Clients } from "@/db_types";
 import { http } from "@/service/httpService";
+import { DateRange } from "react-day-picker";
 
 const ClientsPage = () => {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -28,18 +29,38 @@ const ClientsPage = () => {
   });
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const { error } = useNotification();
-  const getClientsData = async (
-    page_index: number = 0,
-    page_size: number = 10
-  ) => {
+  const getClientsData = async () => {
     var _SQ: SearchQuery = {
       FilterByOptions: [],
       OrderByOptions: [],
-      PageIndex: page_index,
-      PageSize: page_size,
-      Select: "*,currency(symbol,conversion_rate),reservations(id)",
+      PageIndex: pagination.pageIndex,
+      PageSize: pagination.pageSize,
+      Select:
+        "*,currency(symbol),reservations(id,reservation_costs(client_id,amount,amount_omr))",
       Table: "clients",
     };
+    columnFilters?.map((i) => {
+      if (i.id == "created_at") {
+        var date_ranage = i.value as DateRange;
+        _SQ.FilterByOptions.push({
+          FilterFor: date_ranage.from,
+          FilterOperator: eFilterOperator.GreaterThanOrEquals,
+          MemberName: "created_at",
+        });
+        if (date_ranage.to)
+          _SQ.FilterByOptions.push({
+            FilterFor: date_ranage.to,
+            FilterOperator: eFilterOperator.LessThanOrEquals,
+            MemberName: "created_at",
+          });
+      } else if (typeof i.value === "object") {
+        _SQ.FilterByOptions.push({
+          MemberName: i.id,
+          FilterOperator: eFilterOperator.EqualsToList,
+          FilterFor: `(${(i.value as string[]).join(",")})`,
+        });
+      }
+    });
     sorting?.map((i) => {
       _SQ.OrderByOptions.push({
         MemberName: i.id,
@@ -53,7 +74,6 @@ const ClientsPage = () => {
 
     if (!response.success) throw new Error(response.message);
 
-    console.log("response", response.results);
     return response.results;
   };
 

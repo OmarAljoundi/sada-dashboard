@@ -33,8 +33,8 @@ const ReservationBillForm: FC<{
       formData
     )) as BaseResponse<ReservationBills>;
 
-    console.log("response", response);
     if (response.success) {
+      resetForm();
       success("A new invoice has been added!");
       route.refresh();
     } else {
@@ -52,6 +52,7 @@ const ReservationBillForm: FC<{
     isSubmitting,
     errors,
     touched,
+    resetForm,
     values,
   } = useFormik({
     initialValues: {

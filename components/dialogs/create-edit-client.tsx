@@ -141,11 +141,12 @@ const CreateEditClient: FC<{
             />
             <SelectInputObject
               id={"currency_id"}
+              include_label={true}
               name="currency_id"
               options={currencies?.map((i) => {
                 return {
                   label: i.symbol,
-                  value: i.id,
+                  value: String(i.id),
                 };
               })}
               label={"Currency"}

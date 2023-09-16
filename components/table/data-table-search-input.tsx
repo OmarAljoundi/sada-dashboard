@@ -44,7 +44,6 @@ export function DataTableSearchInput<TData, TValue>({
 
   React.useEffect(() => {
     column?.setFilterValue(value);
-    console.log("SSSS", column);
   }, [debouncedValue]);
 
   React.useEffect(() => {

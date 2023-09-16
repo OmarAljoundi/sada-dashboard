@@ -14,6 +14,7 @@ import { supabaseClient } from "@/lib/supabaseClient";
 import { User } from "@/db_types";
 import { DataTableSearchInput } from "./data-table-search-input";
 import { ReactNode } from "react";
+import { CLIENTS_TYPE, COUNTRIES } from "@/constants";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -32,7 +33,6 @@ export function DataTableToolbar<TData>({
 
   const getUsers = async (): Promise<FacetedOptions[]> => {
     const { data } = await supabaseClient.from("users").select("*");
-    console.log("data", data);
     return data?.map((i) => {
       return {
         label: i.name,
@@ -43,6 +43,7 @@ export function DataTableToolbar<TData>({
 
   const { data: _response } = useQuery("Users", async () => await getUsers(), {
     refetchInterval: false,
+    enabled: !!table.getColumn("type"),
   });
 
   return (
@@ -51,9 +52,10 @@ export function DataTableToolbar<TData>({
         {table.getColumn("clients") && (
           <DataTableSearchInput
             column={table.getColumn("clients")}
-            placeholder="Search by name.."
+            placeholder="Search by name or phone number.."
           />
         )}
+
         {table.getColumn("name") && (
           <DataTableSearchInput
             column={table.getColumn("name")}
@@ -86,6 +88,25 @@ export function DataTableToolbar<TData>({
             column={table.getColumn("sold_by")}
             title="Sold by"
             options={_response ?? []}
+          />
+        )}
+        {table.getColumn("type") && (
+          <DataTableFacetedFilter
+            column={table.getColumn("type")}
+            title="Customer Type"
+            options={CLIENTS_TYPE}
+          />
+        )}
+        {table.getColumn("countries") && (
+          <DataTableFacetedFilter
+            column={table.getColumn("countries")}
+            title="Countries"
+            options={COUNTRIES.map((x) => {
+              return {
+                label: x.name,
+                value: x.name,
+              };
+            })}
           />
         )}
 

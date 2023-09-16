@@ -36,10 +36,12 @@ const SelectInputObject = React.forwardRef<HTMLInputElement, SelectInputProps>(
       field,
       onValueChange,
       error,
+      value,
       ...props
     },
     ref
   ) => {
+    console.log("options", options);
     return (
       <div className="grid gap-y-2 w-full relative">
         {include_label && (
@@ -64,7 +66,7 @@ const SelectInputObject = React.forwardRef<HTMLInputElement, SelectInputProps>(
             name={props.name}
             disabled={props.disabled}
             onValueChange={(e) => onValueChange!(field!, e)}
-            defaultValue={props.value as any}
+            value={value as any}
           >
             <SelectTrigger className={cn(error && "border-2 border-red-500")}>
               <SelectValue placeholder={props.placeholder} />

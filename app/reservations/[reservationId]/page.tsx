@@ -15,7 +15,7 @@ const UpdateReservation: FC<{ params: { reservationId: number } }> = async ({
   const { data, error } = await supabaseClient
     .from("reservations")
     .select(
-      "*,reservation_costs(*),reservation_bills(*),clients(*,currency(*))"
+      "*,reservation_costs(*,clients(*)),reservation_bills(*),clients(*,currency(*))"
     )
     .eq("id", params.reservationId)
     .single();
@@ -27,16 +27,6 @@ const UpdateReservation: FC<{ params: { reservationId: number } }> = async ({
   return (
     <Suspense fallback={<h1>Loading</h1>}>
       <div className="hidden h-full flex-1 flex-col space-y-8 p-8 md:flex">
-        <div className="flex items-center justify-between space-y-2">
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight">
-              Create New Reservation
-            </h2>
-            <p className="text-muted-foreground">
-              Here&apos;s you can create a new reservation
-            </p>
-          </div>
-        </div>
         <ReservationForm data={data} />
         <ReservationBillForm
           data={data.reservation_bills}

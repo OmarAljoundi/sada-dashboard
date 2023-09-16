@@ -24,6 +24,10 @@ export const CLIENTS_TYPE = [
     label: "Business",
     value: "Business",
   },
+  {
+    label: "Agency",
+    value: "Agency",
+  },
 ];
 
 export const COUNTRIES = [

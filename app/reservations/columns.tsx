@@ -86,6 +86,24 @@ export const columns: ColumnDef<Reservations>[] = [
     },
   },
   {
+    accessorKey: "clients.phone_number",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Customer Name" />
+    ),
+    cell: ({ row }) => {
+      return (
+        <div className="w-32 flex items-center justify-between">
+          <span className="max-w-[6rem] truncate">
+            {(row.getValue("clients") as Clients)?.phone_number}
+          </span>
+        </div>
+      );
+    },
+    filterFn: (row, id, value) => {
+      return true;
+    },
+  },
+  {
     accessorKey: "check_in",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Check in" />
@@ -135,12 +153,14 @@ export const columns: ColumnDef<Reservations>[] = [
     ),
   },
   {
-    accessorKey: "remaining_amount",
+    accessorKey: "countries",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Remaining Amount" />
+      <DataTableColumnHeader column={column} title="Countries" />
     ),
     cell: ({ row }) => (
-      <div className="w-[40px]">{row.getValue("remaining_amount")}</div>
+      <div className="w-[200px] line-clamp-4 truncate">
+        {(row.getValue("countries") as string[]).join(", ")}
+      </div>
     ),
   },
   {
@@ -149,7 +169,7 @@ export const columns: ColumnDef<Reservations>[] = [
       <DataTableColumnHeader column={column} title="CreatedAt" />
     ),
     cell: ({ row }) => (
-      <div className="w-[100px] truncate">
+      <div className="w-[100px] truncate ">
         {format(new Date(row.getValue("created_at")), "yyyy-MM-dd")}
       </div>
     ),
