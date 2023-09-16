@@ -152,7 +152,7 @@ const CreateEditClient: FC<{
               label={"Currency"}
               placeholder="Select a currency"
               error={touched.currency_id && errors.currency_id}
-              value={values.currency_id}
+              value={String(values.currency_id)}
               disabled={isSubmitting}
               onValueChange={setFieldValue}
               field="currency_id"
