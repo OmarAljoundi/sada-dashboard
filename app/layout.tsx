@@ -13,7 +13,7 @@ const rubik = Rubik({
 });
 
 export const metadata: Metadata = {
-  title: "Sada Billing System",
+  title: "Billing System",
 };
 
 export default function RootLayout({

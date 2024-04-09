@@ -35,13 +35,13 @@ const LoginPage = () => {
     <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8 ">
       <div className="max-w-2xl mx-auto shadow-2xl p-10 w-full rounded-xl">
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-          <Image
+          {/* <Image
             width={200}
             height={175}
             className="mx-auto h-32 w-auto"
             src="/sada-logo.png"
             alt="Sada"
-          />
+          /> */}
           <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
             Sign in to your account
           </h2>

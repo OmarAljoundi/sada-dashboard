@@ -64,13 +64,14 @@ export const SideMenu = () => {
         aria-label="Sidebar"
       >
         <div className="h-full px-3 py-4 overflow-y-auto bg-gray-800">
-          <Image
+          {/* <Image
             src="/sada-logo.png"
             width={200}
             height={175}
             alt="image-logo"
             className="w-"
           />
+          */}
           <Separator className="my-4" />
           <ul className="space-y-2 font-medium">
             {MenuItems.map((i) => (
