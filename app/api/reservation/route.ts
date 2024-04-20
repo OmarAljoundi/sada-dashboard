@@ -55,9 +55,13 @@ export async function POST(req: NextRequest, res: NextResponse) {
     }
 
     body.modified_by = authUser!.name;
-
+    body.client_id = body.clients?.id;
+    
     delete body.reservation_bills;
     delete body.reservation_costs;
+    delete body.clients;
+
+   
 
     body.modified_at = new Date().toISOString();
     const { data, error } = await supabaseClient

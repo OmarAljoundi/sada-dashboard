@@ -6,16 +6,21 @@ import { Input } from "@/components/ui/input";
 import { useNotification } from "@/components/ui/notification";
 import { SelectInput } from "@/components/ui/select-input";
 import { Separator } from "@/components/ui/separator";
+import { PAYMENT_METHODS } from "@/constants";
 import { ReservationBills, Reservations } from "@/db_types";
 import { cn } from "@/lib/utils";
 import { http } from "@/service/httpService";
+import { useFormik } from "formik";
 import { useRouter } from "next/navigation";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
+import * as yup from "yup";
+
 const ReservationBillRows: FC<{
   data?: ReservationBills[];
 }> = ({ data }) => {
   const route = useRouter();
   const [isDeleting, setIsDeleting] = useState<number>(0);
+  const [editRow, setEditRow] = useState<ReservationBills | null>(null);
   const { error, success: successMessage } = useNotification();
   const handleDelete = async (id: number, invoice: number) => {
     setIsDeleting(id);
@@ -31,6 +36,49 @@ const ReservationBillRows: FC<{
     setIsDeleting(0);
   };
 
+  const handleSubmitData = async (formData: ReservationBills) => {
+    const response = (await http("reservation/bill").update(
+      formData
+    )) as BaseResponse<ReservationBills>;
+
+    if (response.success) {
+      successMessage(`Invoice has been updated!`);
+      route.refresh();
+      setEditRow(null);
+      resetForm();
+    } else {
+      error(`An error occured: ${response.message}`);
+    }
+  };
+
+  const {
+    handleChange,
+    setFieldValue,
+    handleSubmit,
+    handleBlur,
+    isSubmitting,
+    errors,
+    touched,
+    resetForm,
+    setValues,
+    values,
+  } = useFormik({
+    initialValues: {},
+    onSubmit: handleSubmitData,
+    validateOnChange: true,
+    validateOnBlur: true,
+    enableReinitialize: true,
+    validationSchema: Schema,
+  });
+
+  useEffect(() => {
+    if (editRow) {
+      setValues(editRow);
+    } else {
+      resetForm();
+    }
+  }, [editRow]);
+
   return (
     <div
       className={cn(
@@ -43,42 +91,59 @@ const ReservationBillRows: FC<{
         <>
           <div className="grid">
             <div className="pr-4">
-              <div className="w-full grid grid-cols-8 gap-y-4 gap-x-8">
+              <form
+                onSubmit={handleSubmit}
+                className="w-full grid grid-cols-8 gap-y-4 gap-x-8"
+              >
                 {data?.map((item, index) => (
                   <>
                     <div
                       className="flex gap-x-4 w-full items-end col-span-6"
                       key={item.id}
                     >
-                      <Input
-                        div_className="grid gap-y-2 w-full relative"
-                        disabled={true}
-                        include_label={index == 0}
-                        value={item.bill_amount ?? ""}
-                        label="Invoice amount"
-                      />
-                      <DatePicker
-                        include_label={index == 0}
-                        disabled_button={true}
-                        field="bill_date"
-                        label="Issued at"
-                        value={item.bill_date as unknown as Date}
-                      />
-                      <Input
-                        div_className="grid gap-y-2 w-full relative"
-                        include_label={index == 0}
-                        disabled={true}
-                        value={item.payment_method ?? ""}
-                        label="Payment method"
-                      />
-                      <SelectInput
-                        options={["Cash", "Bank transfer", "Machine"]}
-                        label={"Payment method"}
-                        include_label={index == 0}
-                        placeholder="Select a payment method"
-                        value={item.payment_method ?? ""}
-                        disabled={true}
-                      />
+                      {editRow?.id == item.id ? (
+                        <>
+                          <Input
+                            div_className="grid gap-y-2 w-full relative"
+                            disabled={isSubmitting}
+                            include_label={index == 0}
+                            value={values.bill_amount ?? ""}
+                            name="bill_amount"
+                            id="bill_amount"
+                            label="Invoice amount"
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            error={touched.bill_amount && errors.bill_amount}
+                          />
+                          <DatePicker
+                            field="bill_date"
+                            include_label={index == 0}
+                            label="Issued at"
+                            id={"bill_date"}
+                            value={values.bill_date as unknown as Date}
+                            onChange={setFieldValue}
+                            error={touched.bill_date && errors.bill_date}
+                          />
+
+                          <SelectInput
+                            id={"payment_method"}
+                            name="payment_method"
+                            options={PAYMENT_METHODS.map((x) => x.value)}
+                            label={"Payment method"}
+                            placeholder="Select a payment method"
+                            error={
+                              touched.payment_method && errors.payment_method
+                            }
+                            value={values.payment_method ?? ""}
+                            disabled={isSubmitting}
+                            onValueChange={setFieldValue}
+                            field="payment_method"
+                            include_label={index == 0}
+                          />
+                        </>
+                      ) : (
+                        <ReadonlyInputs index={index} item={item} />
+                      )}
                     </div>
                     <div className="flex justify-between gap-x-8 col-span-2 items-end">
                       <Button
@@ -107,12 +172,40 @@ const ReservationBillRows: FC<{
                             ></path>
                           </svg>
                         )}
-                        Delete Invoice
+                        Delete
                       </Button>
+                      {editRow?.id == item.id ? (
+                        <div className="flex justify-between gap-x-2 w-1/2 ">
+                          <Button
+                            className="w-1/2 h-10 border-destructive bg-destructive/20 hover:bg-destructive/50"
+                            variant={"outline"}
+                            type="button"
+                            onClick={() => setEditRow(null)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            className="w-1/2 h-10"
+                            variant={"secondary"}
+                            type="submit"
+                          >
+                            Save
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          className="w-1/2 h-10"
+                          variant={"secondary"}
+                          type="button"
+                          onClick={() => setEditRow(item)}
+                        >
+                          Modify
+                        </Button>
+                      )}
                     </div>
                   </>
                 ))}
-              </div>
+              </form>
             </div>
           </div>
         </>
@@ -126,3 +219,43 @@ const ReservationBillRows: FC<{
 };
 
 export default ReservationBillRows;
+
+const Schema = yup.object().shape({
+  bill_amount: yup.number().required("Field is required"),
+  bill_date: yup.date().required("Field is required"),
+  payment_method: yup.string().required("Field is required"),
+});
+
+function ReadonlyInputs({
+  item,
+  index,
+}: {
+  item: ReservationBills;
+  index: number;
+}) {
+  return (
+    <>
+      <Input
+        div_className="grid gap-y-2 w-full relative"
+        disabled={true}
+        include_label={index == 0}
+        value={item.bill_amount ?? ""}
+        label="Invoice amount"
+      />
+      <DatePicker
+        include_label={index == 0}
+        disabled_button={true}
+        field="bill_date"
+        label="Issued at"
+        value={item.bill_date as unknown as Date}
+      />
+      <Input
+        div_className="grid gap-y-2 w-full relative"
+        include_label={index == 0}
+        disabled={true}
+        value={item.payment_method ?? ""}
+        label="Payment method"
+      />
+    </>
+  );
+}

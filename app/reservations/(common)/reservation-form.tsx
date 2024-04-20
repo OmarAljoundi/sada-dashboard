@@ -36,7 +36,6 @@ const ReservationForm: FC<{ data?: Reservations }> = ({ data }) => {
       .from("clients")
       .select("*");
 
-    console.log("error", error);
     if (error) {
       throw new Error(error.details);
     }

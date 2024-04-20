@@ -41,7 +41,6 @@ const SelectInputObject = React.forwardRef<HTMLInputElement, SelectInputProps>(
     },
     ref
   ) => {
-    console.log("options", options);
     return (
       <div className="grid gap-y-2 w-full relative">
         {include_label && (

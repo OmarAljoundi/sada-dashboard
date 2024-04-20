@@ -4,19 +4,11 @@ import { BaseResponse } from "@/base-response";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useNotification } from "@/components/ui/notification";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { SelectInput } from "@/components/ui/select-input";
 import { Separator } from "@/components/ui/separator";
 import { PAYMENT_METHODS } from "@/constants";
-import { ReservationBills, Reservations } from "@/db_types";
+import { ReservationBills } from "@/db_types";
 import { http } from "@/service/httpService";
 import { useFormik } from "formik";
 import { useRouter } from "next/navigation";
@@ -28,6 +20,7 @@ const ReservationBillForm: FC<{
 }> = ({ data, reservation_id }) => {
   const route = useRouter();
   const { error, success } = useNotification();
+
   const handleSubmitData = async (formData: ReservationBills) => {
     const response = (await http("reservation/bill").post(
       formData

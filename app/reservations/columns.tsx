@@ -32,8 +32,6 @@ export const columns: ColumnDef<Reservations>[] = [
       <DataTableColumnHeader column={column} title="Customer Name" />
     ),
     cell: ({ row }) => {
-      console.log("row", row);
-
       return (
         <div className="w-32 flex items-center justify-between">
           <span className="max-w-[6rem] truncate">

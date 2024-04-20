@@ -28,6 +28,8 @@ import { Info } from "lucide-react";
 export interface SelectWithSearchProps {
   error?: string | boolean;
   label?: string;
+  include_label?:boolean;
+  disabled?:boolean
   value: string;
   options?: { label: string; value: any }[];
   field: string;
@@ -38,12 +40,12 @@ export interface SelectWithSearchProps {
 const SelectWithSearch = React.forwardRef<
   HTMLInputElement,
   SelectWithSearchProps
->(({ value, label, error, field, placeholder, onChange, options }, ref) => {
+>(({ value, label, error, field, placeholder,include_label = true,disabled=false, onChange, options }, ref) => {
   return (
     <Popover>
       <PopoverTrigger asChild>
         <div className="grid gap-y-2 w-full relative">
-          {label && (
+          {label && include_label  && (
             <Label className={cn(error && "text-red-500")}>{label}</Label>
           )}
           {error && (
@@ -64,6 +66,7 @@ const SelectWithSearch = React.forwardRef<
             type="button"
             variant="outline"
             size="sm"
+            disabled={disabled}
             className={cn(
               error && "border-2 border-red-500",
               "text-left w-full  cursor-pointer h-10"

@@ -76,18 +76,17 @@ export async function PUT(req: NextRequest, res: NextResponse) {
         { status: 401 }
       );
 
-    const { data: authUser } = await supabaseClient
-      .from("users")
-      .select("*")
-      .eq("user_id", session_response!.user.id)
-      .single();
+    const { bill_amount, bill_date, created_at, id, payment_method } = body;
 
     const { data, error } = await supabaseClient
-      .from("resservation_bills")
+      .from("reservation_bills")
       .update({
-        ...body,
+        bill_amount,
+        bill_date,
+        created_at,
+        payment_method,
       })
-      .eq("id", body.id!)
+      .eq("id", id!)
       .select("*")
       .single();
 

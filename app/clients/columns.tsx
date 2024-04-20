@@ -55,9 +55,6 @@ export const columns: ColumnDef<Clients>[] = [
     ),
     cell: ({ row }) => <div className="w-full">{row.getValue("name")}</div>,
     filterFn: (row, id, value) => {
-      console.log("row: ", row);
-      console.log("id: ", id);
-      console.log("value: ", value);
       return true;
     },
   },

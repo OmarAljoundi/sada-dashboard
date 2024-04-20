@@ -64,7 +64,7 @@ const SelectInput = React.forwardRef<HTMLInputElement, SelectInputProps>(
             name={props.name}
             disabled={props.disabled}
             onValueChange={(e) => onValueChange!(field!, e)}
-            defaultValue={props.value as any}
+            value={props.value as any}
           >
             <SelectTrigger className={cn(error && "border-2 border-red-500")}>
               <SelectValue placeholder={props.placeholder} />

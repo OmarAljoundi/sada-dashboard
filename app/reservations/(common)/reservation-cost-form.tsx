@@ -2,13 +2,11 @@
 
 import { BaseResponse } from "@/base-response";
 import { Button } from "@/components/ui/button";
-import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { useNotification } from "@/components/ui/notification";
-import { SelectInput } from "@/components/ui/select-input";
 import { SelectWithSearch } from "@/components/ui/select-with-search";
 import { Separator } from "@/components/ui/separator";
-import { ReservationBills, ReservationCosts, Reservations } from "@/db_types";
+import { ReservationCosts,  } from "@/db_types";
 import { supabaseClient } from "@/lib/supabaseClient";
 import { http } from "@/service/httpService";
 import { useFormik } from "formik";
@@ -204,7 +202,7 @@ const ReservationCostForm: FC<{
 };
 
 const Schema = yup.object().shape({
-  invoice_number: yup.number().required("Field is required"),
+  invoice_number: yup.string().required("Field is required"),
   amount: yup.number().required("Field is required"),
   amount_omr: yup.number().required("Field is required"),
 });

@@ -49,7 +49,6 @@ const CreateEditClient: FC<{
         .update({ ...e })
         .eq("id", e.id);
       if (error) {
-        console.log("error", error);
         toast.error("Error while updating client: " + error.details);
         return;
       }

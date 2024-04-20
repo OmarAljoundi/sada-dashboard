@@ -21,10 +21,6 @@ export function DataTableDateFilter<TData, TValue>({
   column,
   title,
 }: DataTableDateFilter<TData, TValue>) {
-  React.useEffect(() => {
-    console.log("column?.getFilterValue()", column?.getFilterValue());
-  }, []);
-
   return (
     <div className={cn("grid xl:gap-2 w-1/2 lg:w-1/3 xl:w-1/4")}>
       <Popover>

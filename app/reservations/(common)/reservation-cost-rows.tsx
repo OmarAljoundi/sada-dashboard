@@ -1,16 +1,19 @@
 "use client";
 import { BaseResponse } from "@/base-response";
 import { Button } from "@/components/ui/button";
-import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { useNotification } from "@/components/ui/notification";
-import { SelectInput } from "@/components/ui/select-input";
+import { SelectWithSearch } from "@/components/ui/select-with-search";
 import { Separator } from "@/components/ui/separator";
-import { ReservationBills, ReservationCosts, Reservations } from "@/db_types";
+import { ReservationCosts } from "@/db_types";
+import { supabaseClient } from "@/lib/supabaseClient";
 import { cn } from "@/lib/utils";
 import { http } from "@/service/httpService";
+import { useFormik } from "formik";
 import { useRouter } from "next/navigation";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
+import { useQuery } from "react-query";
+import * as yup from "yup";
 
 const ReservationCostRows: FC<{
   data?: ReservationCosts[];
@@ -18,6 +21,7 @@ const ReservationCostRows: FC<{
   const route = useRouter();
   const [isDeleting, setIsDeleting] = useState<number>(0);
   const { error, success: successMessage } = useNotification();
+  const [editRow, setEditRow] = useState<ReservationCosts | null>(null);
 
   const handleDelete = async (id: number, invoice: number) => {
     setIsDeleting(id);
@@ -33,6 +37,73 @@ const ReservationCostRows: FC<{
     setIsDeleting(0);
   };
 
+  const handleSubmitData = async (formData: ReservationCosts) => {
+    const response = (await http("reservation/cost").update(
+      formData
+    )) as BaseResponse<ReservationCosts>;
+
+    if (response.success) {
+      successMessage(`Cost has been updated!`);
+      route.refresh();
+      setEditRow(null);
+      resetForm();
+    } else {
+      error(`An error occured: ${response.message}`);
+    }
+  };
+
+  const getClients = async () => {
+    const { data, error } = await supabaseClient
+      .from("clients")
+      .select("id,type,name,currency(id,symbol)")
+      .eq("type", "Agency");
+
+    if (error) throw new Error(error.message);
+
+    return data ?? [];
+  };
+
+  const { data: clients } = useQuery(
+    "Clients_agency",
+    async () => await getClients(),
+    {
+      refetchInterval: false,
+      onError(err) {
+        error(err as string);
+      },
+    }
+  );
+
+  const {
+    submitForm,
+    handleChange,
+    setFieldValue,
+    setValues,
+    handleSubmit,
+    handleBlur,
+    resetForm,
+    isValid,
+    isSubmitting,
+    errors,
+    touched,
+    values,
+  } = useFormik({
+    initialValues: {},
+    onSubmit: handleSubmitData,
+    validateOnChange: true,
+    validateOnBlur: true,
+    enableReinitialize: true,
+    validationSchema: Schema,
+  });
+
+  useEffect(() => {
+    if (editRow) {
+      setValues(editRow);
+    } else {
+      resetForm();
+    }
+  }, [editRow]);
+
   return (
     <div
       className={cn(
@@ -44,54 +115,94 @@ const ReservationCostRows: FC<{
       {data && data.length > 0 ? (
         <div className="grid">
           <div className="pr-4">
-            <div className="w-full grid grid-cols-8 gap-y-4 gap-x-8">
+            <form
+              onSubmit={handleSubmit}
+              className="w-full grid grid-cols-8 gap-y-4 gap-x-8"
+            >
               {data?.map((item, index) => (
                 <>
                   <div
                     className="flex gap-x-4 w-full items-end col-span-6"
                     key={item.id}
                   >
-                    <Input
-                      div_className="grid gap-y-2 w-full relative"
-                      disabled={true}
-                      include_label={index == 0}
-                      value={item.clients?.name ?? ""}
-                      label="Agency"
-                    />
-                    <Input
-                      div_className="grid gap-y-2 w-full relative"
-                      disabled={true}
-                      include_label={index == 0}
-                      value={item.invoice_number ?? ""}
-                      label="Invoice number"
-                    />
-                    <Input
-                      div_className="grid gap-y-2 w-full relative"
-                      disabled={true}
-                      include_label={index == 0}
-                      value={item.amount ?? ""}
-                      name="amount"
-                      id="amount"
-                      label="Amount"
-                    />
-                    <Input
-                      div_className="grid gap-y-2 w-full relative"
-                      disabled={true}
-                      include_label={index == 0}
-                      value={item.amount_omr ?? ""}
-                      name="amount_omr"
-                      id="amount_omr"
-                      label="Amount OMR"
-                    />
-                    <Input
-                      div_className="grid gap-y-2 w-full relative"
-                      disabled={true}
-                      include_label={index == 0}
-                      value={item.notes ?? ""}
-                      name="notes"
-                      id="notes"
-                      label="Notes"
-                    />
+                    {editRow?.id == item.id ? (
+                      <>
+                        <SelectWithSearch
+                          field="client_id"
+                          onChange={setFieldValue}
+                          options={clients?.map((x) => {
+                            return {
+                              label: `${x.name!} | ${x.currency?.symbol}`,
+                              value: String(x.id!),
+                            };
+                          })}
+                          value={String(values.client_id) ?? item.clients?.name}
+                          placeholder="Search agency"
+                          error={touched.client_id && errors.client_id}
+                          label="Agency"
+                          disabled={editRow?.id !== item.id}
+                          include_label={index == 0}
+                        />
+                        <Input
+                          div_className="grid gap-y-2 w-full relative"
+                          value={values.invoice_number ?? item.invoice_number!}
+                          name="invoice_number"
+                          id="invoice_number"
+                          label="Invoice number"
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={
+                            touched.invoice_number && errors.invoice_number
+                          }
+                          disabled={isSubmitting || editRow?.id !== item.id}
+                          include_label={index == 0}
+                        />
+                        <Input
+                          div_className="grid gap-y-2 w-full relative"
+                          disabled={isSubmitting || editRow?.id !== item.id}
+                          include_label={index == 0}
+                          value={values.amount ?? item.amount!}
+                          name="amount"
+                          id="amount"
+                          label={`Amount ${
+                            values.client_id
+                              ? "in " +
+                                clients?.find((x) => x.id == values.client_id)
+                                  ?.currency?.symbol
+                              : ""
+                          } `}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.amount && errors.amount}
+                        />
+                        <Input
+                          div_className="grid gap-y-2 w-full relative"
+                          disabled={isSubmitting || editRow?.id !== item.id}
+                          include_label={index == 0}
+                          value={values.amount_omr ?? item.amount_omr!}
+                          name="amount_omr"
+                          id="amount_omr"
+                          label="Amount OMR"
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.amount_omr && errors.amount_omr}
+                        />
+                        <Input
+                          div_className="grid gap-y-2 w-full relative"
+                          disabled={isSubmitting || editRow?.id !== item.id}
+                          include_label={index == 0}
+                          value={values.notes ?? item.notes ?? ""}
+                          name="notes"
+                          id="notes"
+                          label="Notes"
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.notes && errors.notes}
+                        />
+                      </>
+                    ) : (
+                      <ReadonlyInputs index={index} item={item} />
+                    )}
                   </div>
                   <div className="flex justify-between gap-x-8 col-span-2 items-end">
                     <Button
@@ -120,12 +231,40 @@ const ReservationCostRows: FC<{
                           ></path>
                         </svg>
                       )}
-                      Delete Cost
+                      Delete
                     </Button>
+                    {editRow?.id == item.id ? (
+                      <div className="flex justify-between gap-x-2 w-1/2 ">
+                        <Button
+                          className="w-1/2 h-10 border-destructive bg-destructive/20 hover:bg-destructive/50"
+                          variant={"outline"}
+                          type="button"
+                          onClick={() => setEditRow(null)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          className="w-1/2 h-10"
+                          variant={"secondary"}
+                          type="submit"
+                        >
+                          Save
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        className="w-1/2 h-10"
+                        variant={"secondary"}
+                        type="button"
+                        onClick={() => setEditRow(item)}
+                      >
+                        Modify
+                      </Button>
+                    )}
                   </div>
                 </>
               ))}
-            </div>
+            </form>
           </div>
         </div>
       ) : (
@@ -137,4 +276,64 @@ const ReservationCostRows: FC<{
   );
 };
 
+const Schema = yup.object().shape({
+  invoice_number: yup.string().required("Field is required"),
+  amount: yup.number().required("Field is required"),
+  amount_omr: yup.number().required("Field is required"),
+});
+
 export default ReservationCostRows;
+
+function ReadonlyInputs({
+  item,
+  index,
+}: {
+  item: ReservationCosts;
+  index: number;
+}) {
+  return (
+    <>
+      <Input
+        div_className="grid gap-y-2 w-full relative"
+        disabled={true}
+        include_label={index == 0}
+        value={item.clients?.name ?? ""}
+        label="Agency"
+      />
+      <Input
+        div_className="grid gap-y-2 w-full relative"
+        disabled={true}
+        include_label={index == 0}
+        value={item.invoice_number ?? ""}
+        label="Invoice number"
+      />
+      <Input
+        div_className="grid gap-y-2 w-full relative"
+        disabled={true}
+        include_label={index == 0}
+        value={item.amount ?? ""}
+        name="amount"
+        id="amount"
+        label="Amount"
+      />
+      <Input
+        div_className="grid gap-y-2 w-full relative"
+        disabled={true}
+        include_label={index == 0}
+        value={item.amount_omr ?? ""}
+        name="amount_omr"
+        id="amount_omr"
+        label="Amount OMR"
+      />
+      <Input
+        div_className="grid gap-y-2 w-full relative"
+        disabled={true}
+        include_label={index == 0}
+        value={item.notes ?? ""}
+        name="notes"
+        id="notes"
+        label="Notes"
+      />
+    </>
+  );
+}
