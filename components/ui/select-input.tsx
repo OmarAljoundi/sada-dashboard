@@ -11,10 +11,13 @@ import {
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "./select";
+import { ScrollArea } from "./scroll-area";
 export interface SelectInputProps
   extends React.InputHTMLAttributes<HTMLSelectElement> {
   error?: string | boolean;
@@ -69,12 +72,15 @@ const SelectInput = React.forwardRef<HTMLInputElement, SelectInputProps>(
             <SelectTrigger className={cn(error && "border-2 border-red-500")}>
               <SelectValue placeholder={props.placeholder} />
             </SelectTrigger>
+
             <SelectContent>
-              {options.map((item) => (
-                <SelectItem key={item} value={item}>
-                  {item}
-                </SelectItem>
-              ))}
+              <ScrollArea className="h-96">
+                {options.map((item) => (
+                  <SelectItem key={item} value={item}>
+                    {item}
+                  </SelectItem>
+                ))}
+              </ScrollArea>
             </SelectContent>
           </Select>
         </div>

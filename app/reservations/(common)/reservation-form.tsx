@@ -15,7 +15,7 @@ import { useNotification } from "@/components/ui/notification";
 import { SelectInput } from "@/components/ui/select-input";
 import { supabaseClient } from "@/lib/supabaseClient";
 import { Reservations } from "@/db_types";
-import { Plus } from "lucide-react";
+import { ArrowRight, Plus } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -25,10 +25,12 @@ import {
 import CreateEditClient from "@/components/dialogs/create-edit-client";
 import { COUNTRIES } from "@/constants";
 import { useRouter } from "next/navigation";
-import { SelectInputObject } from "@/components/ui/select-input-object";
 import { cn, getProfit, getRemaining } from "@/lib/utils";
 
-const ReservationForm: FC<{ data?: Reservations }> = ({ data }) => {
+const ReservationForm: FC<{
+  data?: Reservations;
+  nextReservation?: number;
+}> = ({ data, nextReservation }) => {
   const { error, success } = useNotification();
   const route = useRouter();
   const getClients = async () => {
@@ -112,7 +114,17 @@ const ReservationForm: FC<{ data?: Reservations }> = ({ data }) => {
     <form onSubmit={handleSubmit} className="px-4">
       <div className="grid grid-cols-2  divide-x">
         <div className="pr-4">
-          <h1 className="text-xl">Customer Information</h1>
+          <h1 className="text-xl">
+            Customer Information
+            {nextReservation && (
+              <span className="text-muted-foreground text-xl">
+                {" "}
+                <ArrowRight className="mx-2 w-4 h-4 inline-block" />{" "}
+                Reservations #{nextReservation}
+              </span>
+            )}
+          </h1>
+
           <Separator className="my-4" />
           <div className="w-full grid gap-y-4">
             <div className="flex gap-x-4 w-full">

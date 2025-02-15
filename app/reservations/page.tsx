@@ -21,9 +21,11 @@ const ReservationsPage = () => {
   );
   const [pagination, setPagination] = React.useState<PaginationState>({
     pageIndex: 0,
-    pageSize: 10,
+    pageSize: 50,
   });
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [sorting, setSorting] = React.useState<SortingState>([
+    { id: "id", desc: false },
+  ]);
   const { error } = useNotification();
   const getReservationsData = async () => {
     var _SQ: SearchQuery = {
