@@ -1,18 +1,21 @@
 export const revalidate = 0;
 import { FC, Suspense } from "react";
 import ReservationForm from "../(common)/reservation-form";
-import { supabaseClient } from "@/lib/supabaseClient";
 import { notFound } from "next/navigation";
 import ReservationBillForm from "../(common)/reservation-bill-form";
 import ReservationBillRows from "../(common)/reservation-bill-rows";
 import ReservationCostForm from "../(common)/reservation-cost-form";
 import ReservationCostRows from "../(common)/reservation-cost-rows";
-import { Reservations } from "@/db_types";
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { Database } from "@/types";
+import { cookies } from "next/headers";
 
 const UpdateReservation: FC<{ params: { reservationId: number } }> = async ({
   params,
 }) => {
-  const { data, error } = await supabaseClient
+  const supabase = createRouteHandlerClient<Database>({ cookies });
+
+  const { data, error } = await supabase
     .from("reservations")
     .select(
       "*,reservation_costs(*,clients(*)),reservation_bills(*),clients(*,currency(*))"

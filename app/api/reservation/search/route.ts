@@ -1,5 +1,7 @@
 import { Order, SearchQuery, getEqOperator } from "@/helper-types";
-import { supabaseClient } from "@/lib/supabaseClient";
+import { Database } from "@/types";
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 type OrQuriesProp = {
@@ -23,8 +25,11 @@ export async function POST(req: Request, res: Response) {
   try {
     var OrQuries: OrQuriesProp[] = [];
 
+    const supabase = createRouteHandlerClient<Database>({ cookies });
+
     const requestData = (await req.json()) as SearchQuery;
-    var query = supabaseClient
+
+    var query = supabase
       .from(requestData.Table!)
       .select(requestData.Select, { count: "exact" });
 
